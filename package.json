@@ -37,6 +37,9 @@
     "grunt": "~0.4.0"
   },
   "keywords": [
-    "gruntplugin"
-  ]
+    "gruntplugin", "mysql", "mysqldump", "database", "migration"
+  ],
+  "dependencies": {
+    "tmp": "0.0.18"
+  }
 }

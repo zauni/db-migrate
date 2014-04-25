@@ -189,6 +189,7 @@ module.exports = function(grunt) {
 
             // Default options merged with options from gruntfile
             options = this.options({
+                dry: false,
                 onRemote: false,
                 local: {
                     mysqldump_bin: 'bin/mysqldump',
@@ -199,7 +200,8 @@ module.exports = function(grunt) {
                     mysql_bin: 'mysql',
                     host: 'test.com',
                     user: 'test',
-                    pass: 'test'
+                    pass: 'test',
+                    dump_dir: './'
                 },
                 tables: null,
                 db_src: {
@@ -250,7 +252,12 @@ module.exports = function(grunt) {
                                 dump(results[1], options.db_src, options.tables, options.mysqldump_cli_args, options.mysqldump_bin, callback);
                             },
                             function(callback) {
-                                execDump(results[1], options.db_dest, options.mysql_bin, callback);
+                                if(!options.dry) {
+                                    execDump(results[1], options.db_dest, options.mysql_bin, callback);
+                                }
+                                else {
+                                    callback();
+                                }
                             }
                         ],
                         function(err) {
@@ -273,13 +280,18 @@ module.exports = function(grunt) {
                 async.series(
                     [
                         function(callback) {
-                            dumpRemote(c, '.destinationbackup.sql', options.db_dest, options.tables, options.mysqldump_cli_args, options.mysqldump_bin, callback);
+                            dumpRemote(c, options.dump_dir + '.destinationbackup.sql', options.db_dest, options.tables, options.mysqldump_cli_args, options.mysqldump_bin, callback);
                         },
                         function(callback) {
-                            dumpRemote(c, '.dump.sql', options.db_src, options.tables, options.mysqldump_cli_args, options.mysqldump_bin, callback);
+                            dumpRemote(c, options.dump_dir + '.dump.sql', options.db_src, options.tables, options.mysqldump_cli_args, options.mysqldump_bin, callback);
                         },
                         function(callback) {
-                            execDumpRemote(c, '.dump.sql', options.db_dest, options.mysql_bin, callback);
+                            if(!options.dry) {
+                                execDumpRemote(c, options.dump_dir + '.dump.sql', options.db_dest, options.mysql_bin, callback);
+                            }
+                            else {
+                                callback();
+                            }
                         }
                     ],
                     function(err) {
